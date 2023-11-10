@@ -1,17 +1,19 @@
-const tableNames = require('../../src/constants/tableNames');
 const orderedTableNames = require('../../src/constants/orderedTableNames');
 
 const COUNTS = {
-  USERS: 100,
-  DEVICES: 100,
-  // ROOMS is automatically generated,
-  // 30 days worth of reservation slots for 12 rooms in 2 buildings
-  DEVICE_RESERVATIONS_MIN: 30,
-  DEVICE_RESERVATIONS_MAX: 100,
-  ROOM_RESERVATIONS_MIN: 30,
-  ROOM_RESERVATIONS_MAX: 100,
+  USERS: 100, // total users
+  DEVICES: 100, // total devices
+  ROOMS: 30, // number of days worth of reservation slots for 12 rooms in 2 buildings
+  DEVICE_RESERVATIONS_MIN: 30, // min number of device reservations
+  DEVICE_RESERVATIONS_MAX: 100, // max number of device reservations
+  ROOM_RESERVATIONS_MIN: 30, // min number of room reservations
+  ROOM_RESERVATIONS_MAX: 100, // max number of room reservations
 };
 
+/**
+ * Generates a list of user objects with randomly assigned properties.
+ * @returns {Array<Object>} An array of user objects.
+ */
 function generateUserList() {
   const userList = [];
   for (let i = 0; i < COUNTS.USERS; i += 1) {
@@ -30,6 +32,11 @@ function generateUserList() {
   return userList;
 }
 
+/**
+ * Generates a list of devices with random properties.
+ * @param {Array} users - An array of user objects.
+ * @returns {Array<Object>} An array of device objects.
+ */
 function generateDeviceList(users) {
   const deviceList = [];
   const categories = ['Laptop', 'Desktop', 'Monitor', 'Keyboard', 'Mouse', 'Printer', 'Scanner', 'Projector', 'Other'];
@@ -72,6 +79,7 @@ function generateDeviceList(users) {
 
     // random warrenty expiration date from 1 year ago until 5 years from now
     const warrantyEXP = new Date();
+    warrantyEXP.setHours(0, 0, 0, 0); // clear time portion of the date
     const oneYearAgo = new Date(
       warrantyEXP.getFullYear() - 1,
       warrantyEXP.getMonth(),
@@ -111,6 +119,12 @@ function generateDeviceList(users) {
   return deviceList;
 }
 
+/**
+ * Generates a list of rooms with their
+ * availability, reserved name, reserved netID, max occupancy, and whether they are an office.
+ * @param {Array} users - An array of user objects.
+ * @returns {Array<Object>} - An array of room objects.
+ */
 function generateRoomList(users) {
   const roomList = [];
 
@@ -119,18 +133,26 @@ function generateRoomList(users) {
     'Norton Hall': ['R2 100', 'R2 101', 'R2 102', 'R2 103', 'R2 104', 'R2 105'],
   };
 
+  // generate dates from 1 week ago until <room count> days from now
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
-  const thirtyDaysFromNow = new Date();
-  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+  const xDaysFromNow = new Date();
+  xDaysFromNow.setDate(xDaysFromNow.getDate() + COUNTS.ROOMS);
 
+  // clear time portion of the date
+  weekAgo.setHours(0, 0, 0, 0);
+  xDaysFromNow.setHours(0, 0, 0, 0);
+
+  // generate full list of dates between weekAgo and xDaysFromNow
   const dates = [];
-  for (let date = new Date(weekAgo); date <= thirtyDaysFromNow; date.setDate(date.getDate() + 1)) {
+  for (let date = new Date(weekAgo); date <= xDaysFromNow; date.setDate(date.getDate() + 1)) {
     dates.push(new Date(date));
   }
 
+  // create list of times from 0 to 23
   const times = Array.from({ length: 24 }, (_, i) => i);
 
+  // for each <building, room, date, time> combo, generate a room entry
   for (const building of Object.keys(rooms)) {
     for (const room of rooms[building]) {
       const maxOccupancy = Math.floor(Math.random() * 40) + 10;
@@ -159,6 +181,12 @@ function generateRoomList(users) {
   return roomList;
 }
 
+/**
+ * Generates an array of device reservations with random user, device, and date information.
+ * @param {Array} users - An array of user objects.
+ * @param {Array} devices - An array of device objects.
+ * @returns {Array<Object>} An array of device reservation objects.
+ */
 function generateDeviceReservations(users, devices) {
   // random number of reservations between min and max
   const deviceReservations = [];
@@ -177,6 +205,11 @@ function generateDeviceReservations(users, devices) {
     const requestDate = new Date();
     const startDate = new Date();
     const endDate = new Date();
+
+    // clear time portion of the date
+    requestDate.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
 
     // random request date from 1 year ago until today
     const oneYearAgo = new Date(
@@ -218,6 +251,12 @@ function generateDeviceReservations(users, devices) {
   return deviceReservations;
 }
 
+/**
+ * Generates an array of room reservations with random users and rooms.
+ * @param {Array} users - An array of user objects.
+ * @param {Array} rooms - An array of room objects.
+ * @returns {Array<Object>} An array of room reservation objects.
+ */
 function generateRoomReservations(users, rooms) {
   // random number of reservations between min and max
   const roomReservations = [];
@@ -234,6 +273,7 @@ function generateRoomReservations(users, rooms) {
     const randomUser = users[Math.floor(Math.random() * users.length)];
 
     const requestDate = new Date();
+    requestDate.setHours(0, 0, 0, 0); // clear time portion of the date
 
     // random request date from 1 year ago until today
     const oneYearAgo = new Date(
@@ -260,6 +300,38 @@ function generateRoomReservations(users, rooms) {
 }
 
 /**
+ * Inserts data in batches using the provided insertFunction.
+ * @param {Array} data - The data to be inserted.
+ * @param {number} batchSize - The size of each batch.
+ * @param {Function} insertFunction - The function to be used for inserting the data.
+ * @returns {Promise<void>} - A promise that resolves when all data has been inserted.
+ */
+async function insertInBatches(data, insertFunction, tableName = '') {
+  const batchSize = 100; // 100 appears to be the max batch size for sqlite
+  const batches = Math.ceil(data.length / batchSize);
+  let totalInsertedItems = 0;
+  for (let i = 0; i < batches; i += 1) {
+    const start = i * batchSize;
+    const end = start + batchSize;
+    const batch = data.slice(start, end);
+
+    const insertedItems = await insertFunction(batch);
+
+    totalInsertedItems += insertedItems.length;
+    const insertedStr = totalInsertedItems.toLocaleString();
+    const totalStr = data.length.toLocaleString();
+    const fullStr = `Inserted ${insertedStr}/${totalStr} ${tableName} entries`;
+    const ellipsis = '.'.repeat(i % 4);
+    process.stdout.clearLine();
+    process.stdout.cursorTo(0);
+    process.stdout.write(fullStr + ellipsis);
+  }
+  process.stdout.clearLine();
+  process.stdout.cursorTo(0);
+  console.log(`Inserted ${data.length.toLocaleString()} ${tableName} entries`);
+}
+
+/**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
@@ -270,43 +342,29 @@ exports.seed = async (knex) => {
   }
 
   const users = generateUserList();
-  const createdUsers = await knex(tableNames.User).insert(users).returning('*');
-  console.log(`Created ${createdUsers.length} users`);
-
   const devices = generateDeviceList(users);
-  const createdDevices = await knex(tableNames.Device).insert(devices).returning('*');
-  console.log(`Created ${createdDevices.length} devices`);
-
   const rooms = generateRoomList(users);
-  const batchSize = 100;
-  const batches = Math.ceil(rooms.length / batchSize);
-  let totalCreatedRooms = 0;
-  for (let i = 0; i < batches; i += 1) {
-    const start = i * batchSize;
-    const end = start + batchSize;
-    const batch = rooms.slice(start, end);
-
-    const createdRooms = await knex(tableNames.Room).insert(batch).returning('*');
-
-    if (i === 0) {
-      console.log(`Created ${createdRooms.length} room entries`);
-      continue;
-    }
-    const ellipsis = '.'.repeat(i % 4);
-    totalCreatedRooms += createdRooms.length;
-    process.stdout.clearLine();
-    process.stdout.cursorTo(0);
-    process.stdout.write(`Created ${totalCreatedRooms} room entries${ellipsis}`);
-  }
-  console.log(`\nCreated ${rooms.length} total room entries`);
-
   const deviceReservations = generateDeviceReservations(users, devices);
-  const createdDeviceReservations = await knex(tableNames.Device_Res).insert(deviceReservations).returning('*');
-  console.log(`Created ${createdDeviceReservations.length} device reservations`);
-
   const roomReservations = generateRoomReservations(users, rooms);
-  const createdRoomReservations = await knex(tableNames.Room_Res).insert(roomReservations).returning('*');
-  console.log(`Created ${createdRoomReservations.length} room reservations`);
+
+  const orderedTableData = [
+    users,
+    devices,
+    rooms,
+    deviceReservations,
+    roomReservations,
+  ];
+  const reverseTableNames = orderedTableNames.reverse();
+
+  for (let i = 0; i < orderedTableData.length; i += 1) {
+    const tableName = reverseTableNames[i];
+    const tableData = orderedTableData[i];
+    await insertInBatches(
+      tableData,
+      (batch) => knex(tableName).insert(batch).returning('*'),
+      tableName,
+    );
+  }
 
   console.log('Done');
 };
