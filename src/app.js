@@ -8,7 +8,7 @@ const https = require('https');
 // Load middlewares and API routes
 const middlewares = require('./middlewares');
 const api = require('./api');
-const httpsOptions = require('./https');
+const getHttpsConfig = require('./https');
 
 // create express app
 const app = express();
@@ -40,9 +40,10 @@ app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
 
 // https server
-let server = app;
-if (httpsOptions.key && httpsOptions.cert) {
-  server = https.createServer(httpsOptions, app);
-}
-
-module.exports = server;
+module.exports = async () => {
+  const httpsOptions = await getHttpsConfig();
+  if (httpsOptions.key && httpsOptions.cert) {
+    return https.createServer(httpsOptions, app);
+  }
+  return app;
+};
