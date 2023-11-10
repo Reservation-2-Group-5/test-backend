@@ -13,11 +13,9 @@ api().then((app) => {
   app.listen(port, () => {
     // detect if api server is running in https mode
     const isHttps = (app instanceof https.Server);
-    // eslint-disable-next-line no-console
     console.log(`Listening: http${(isHttps) ? 's' : ''}://localhost:${port}`);
   });
 }).catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
 });
