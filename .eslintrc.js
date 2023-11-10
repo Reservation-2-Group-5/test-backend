@@ -14,6 +14,7 @@ module.exports = {
     camelcase: 0,
     'no-await-in-loop': 0,
     'no-continue': 'warn',
+    'no-console': 0,
     'no-restricted-syntax': ['error', {
       selector: 'ForInStatement',
       message: 'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
