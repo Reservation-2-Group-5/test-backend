@@ -20,7 +20,7 @@ module.exports = {
   },
   production: {
     client: 'mysql',
-    version: '5.7',
+    version: '8.2',
     connection: {
       host: process.env.DB_HOST || 'localhost',
       port: process.env.DB_PORT || 3306,
