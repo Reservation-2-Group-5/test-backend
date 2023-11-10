@@ -1,5 +1,9 @@
+// Knex configuration file
+
+// Load environment variables
 require('dotenv').config();
 
+// set up the database connection configuration
 module.exports = {
   development: {
     client: 'sqlite3',
