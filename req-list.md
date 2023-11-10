@@ -59,7 +59,8 @@
   - Name
 - [ ] POST `/api/v1/device-res` submit new reservation
 - [ ] PUT `/api/v1/device-res/:id` to approve/deny
-  - Request body includes `status: 'approved'` or `status: 'denied'`
+  - Request body includes `{status: 'approved'}` or `{status: 'denied'}`
+  - See `/src/api/device-res/routes.js`
 
 ### Room Res
 - [ ] GET `/api/v1/room-res` all pending room reservation requests
@@ -85,4 +86,5 @@
   - Name
 - [ ] POST `/api/v1/room-res` submit new reservation
 - [ ] PUT `/api/v1/room-res/:id` to approve/deny
-  - Request body includes `status: 'approved'` or `status: 'denied'`
+  - Request body includes `{status: 'approved'}` or `{status: 'denied'}`
+  - See `/src/api/room-res/routes.js`
