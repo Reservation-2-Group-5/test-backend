@@ -3,13 +3,13 @@ const queries = require('./queries');
 
 const router = express.Router();
 
-// /api/v1/users
+// GET /api/v1/users
 router.get('/', async (req, res) => {
   const users = await queries.getAll();
   res.json(users);
 });
 
-// /api/v1/users/:NetID
+// GET /api/v1/users/:NetID
 router.get('/:NetID', async (req, res, next) => {
   const { NetID } = req.params;
   const user = await queries.get(NetID);

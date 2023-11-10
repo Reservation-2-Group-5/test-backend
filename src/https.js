@@ -13,16 +13,21 @@ const certificateName = certificateArg ? certificateArg.groups.value : 'vueapp';
 console.log(`Checking for certificates in ${baseFolder}`);
 if (!certificateName) {
   console.error('Invalid certificate name. Run this script in the context of an npm/yarn script or pass --name=<<app>> explicitly.');
-  process.exit(-1);
 }
 
 const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
 const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
 
-console.log(`Using certificate: ${certFilePath}`);
-console.log(`Using key: ${keyFilePath}`);
+const exists = fs.existsSync(certFilePath) && fs.existsSync(keyFilePath);
+
+if (exists) {
+  console.log(`Using certificate: ${certFilePath}`);
+  console.log(`Using key: ${keyFilePath}`);
+} else {
+  console.log('No certificate found. Skipping https configuration.');
+}
 
 module.exports = {
-  key: fs.readFileSync(keyFilePath),
-  cert: fs.readFileSync(certFilePath),
+  key: (exists) ? fs.readFileSync(keyFilePath) : null,
+  cert: (exists) ? fs.readFileSync(certFilePath) : null,
 };

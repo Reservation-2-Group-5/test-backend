@@ -3,7 +3,7 @@ const queries = require('./queries');
 
 const router = express.Router();
 
-// /api/v1/devices
+// GET /api/v1/devices
 router.get('/', async (req, res, next) => {
   try {
     const devices = await queries.getAll();
@@ -13,8 +13,9 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// /api/v1/devices/:tag
+// PATCH /api/v1/devices/:tag
 // for updating a device's properties, namely Available
+// (not needed by the frontend, see PUT request in `device-res/routes.js`)
 router.patch('/:tag', async (req, res, next) => {
   try {
     const { tag } = req.params;

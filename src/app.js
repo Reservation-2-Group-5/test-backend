@@ -40,6 +40,9 @@ app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
 
 // https server
-const server = https.createServer(httpsOptions, app);
+let server = app;
+if (httpsOptions.key && httpsOptions.cert) {
+  server = https.createServer(httpsOptions, app);
+}
 
 module.exports = server;

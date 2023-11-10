@@ -3,13 +3,13 @@ const queries = require('./queries');
 
 const router = express.Router();
 
-// /api/v1/rooms
+// GET /api/v1/rooms
 router.get('/', async (req, res) => {
   const rooms = await queries.getAll();
   res.json(rooms);
 });
 
-// /api/v1/rooms/:Building/:Room/:Date/:Time
+// GET /api/v1/rooms/:Building/:Room/:Date/:Time
 // this is essentially /api/v1/rooms/:id, but the id is a composite key
 router.get('/:Building/:Room/:Date/:Time', async (req, res, next) => {
   const {

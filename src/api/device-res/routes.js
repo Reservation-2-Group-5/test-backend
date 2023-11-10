@@ -5,6 +5,7 @@ const userQueries = require('../users/queries');
 
 const router = express.Router();
 
+// GET /api/v1/device-res
 router.get('/', async (req, res, next) => {
   try {
     // if a Status column is added, then this query will need to be updated
@@ -16,6 +17,8 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+// POST /api/v1/device-res
+// for submitting a device reservation
 router.post('/', async (req, res, next) => {
   try {
     const deviceReservation = await queries.submit(req.body);
@@ -33,6 +36,8 @@ router.post('/', async (req, res, next) => {
   }
 });
 
+// PUT /api/v1/room-res/:id
+// for approving or denying a room reservation
 router.put('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
