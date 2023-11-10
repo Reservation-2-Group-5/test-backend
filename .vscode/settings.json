@@ -1,0 +1,14 @@
+{
+  "beautify.config": {
+    "operator_position": "after-newline",
+    "indent_level": 0,
+    "indent_size": 2,
+    "indent_char": " ",
+    "brace_style": "collapse,preserve-inline",
+    "html": {
+      "indent_scripts": "keep",
+      "wrap_attributes": "preserve"
+    }
+  },
+  "files.eol": "\n",
+}
