@@ -1,8 +1,8 @@
 const orderedTableNames = require('../../src/constants/orderedTableNames');
 
 const COUNTS = {
-  USERS: 100, // total users
-  DEVICES: 100, // total devices
+  USERS: 1000, // total users
+  DEVICES: 1000, // total devices
   ROOMS: 30, // number of days worth of reservation slots for 12 rooms in 2 buildings
   DEVICE_RESERVATIONS_MIN: 30, // min number of device reservations
   DEVICE_RESERVATIONS_MAX: 100, // max number of device reservations
@@ -195,9 +195,12 @@ function generateDeviceReservations(users, devices) {
   const numReservations = Math.floor(Math.random() * (max - min)) + min;
 
   for (let i = 0; i < numReservations; i += 1) {
-    // random available device
-    const availableDevices = devices.filter((device) => device.Available);
+    // random available device not already requested by a user
+    const unavailableDevices = deviceReservations.map((reservation) => reservation.Tag);
+    const availableDevices = devices
+      .filter((device) => device.Available && !unavailableDevices.includes(device.Tag));
     const randomDevice = availableDevices[Math.floor(Math.random() * availableDevices.length)];
+    if (!randomDevice) break;
 
     // random user
     const randomUser = users[Math.floor(Math.random() * users.length)];
@@ -265,9 +268,22 @@ function generateRoomReservations(users, rooms) {
   const numReservations = Math.floor(Math.random() * (max - min)) + min;
 
   for (let i = 0; i < numReservations; i += 1) {
-    // random available device
-    const availableRooms = rooms.filter((room) => room.Available);
+    // random available room not already requested by a user
+    const availableRooms = rooms.filter((room) => {
+      for (const unavailableRoom of roomReservations) {
+        if (
+          room.Building === unavailableRoom.Building
+          && room.Room === unavailableRoom.Room
+          && room.Date.getTime() === unavailableRoom.Date.getTime()
+          && room.Time === unavailableRoom.Time
+        ) {
+          return false;
+        }
+      }
+      return room.Available;
+    });
     const randomRoom = availableRooms[Math.floor(Math.random() * availableRooms.length)];
+    if (!randomRoom) break;
 
     // random user
     const randomUser = users[Math.floor(Math.random() * users.length)];
@@ -365,6 +381,27 @@ exports.seed = async (knex) => {
       tableName,
     );
   }
+
+  // set pending device reservations to unavailable
+  console.log('Setting pending device reservations to unavailable');
+  const deviceTags = deviceReservations.map((reservation) => reservation.Tag);
+  const changedDevices = await knex('Device').whereIn('Tag', deviceTags).update({
+    Available: false,
+  }, ['Tag', 'Available']);
+  console.log('Changed devices:', changedDevices);
+
+  // set pending room reservations to unavailable
+  console.log('Setting pending room reservations to unavailable');
+  const roomKeys = roomReservations.map((reservation) => [
+    reservation.Building,
+    reservation.Room,
+    reservation.Date,
+    reservation.Time,
+  ]);
+  const changedRooms = await knex('Room').whereIn(['Building', 'Room', 'Date', 'Time'], roomKeys).update({
+    Available: false,
+  }, ['Building', 'Room', 'Date', 'Time', 'Available']);
+  console.log('Changed rooms:', changedRooms);
 
   console.log('Done');
 };

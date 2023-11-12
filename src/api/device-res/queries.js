@@ -2,6 +2,13 @@ const db = require('../../db');
 const tableNames = require('../../constants/tableNames');
 
 module.exports = {
+  get(id) {
+    return db(tableNames.Device_Res)
+      .where({
+        id,
+      })
+      .first();
+  },
   getAll() {
     return db(tableNames.Device_Res)
       // join the Device_Res table with the Device table
@@ -29,5 +36,12 @@ module.exports = {
     return db(tableNames.Device_Res)
       .insert(device_res)
       .returning('*');
+  },
+  delete(id) {
+    return db(tableNames.Device_Res)
+      .where({
+        id,
+      })
+      .del();
   },
 };

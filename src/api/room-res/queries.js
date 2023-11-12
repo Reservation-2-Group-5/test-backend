@@ -2,9 +2,13 @@ const db = require('../../db');
 const tableNames = require('../../constants/tableNames');
 
 module.exports = {
-  // getAll() {
-  //   return db(tableNames.Room_Res);
-  // },
+  get(id) {
+    return db(tableNames.Room_Res)
+      .where({
+        id,
+      })
+      .first();
+  },
   getAll() {
     return db(tableNames.Room_Res)
       // join the Room_Res table with the Room table
@@ -35,5 +39,12 @@ module.exports = {
     return db(tableNames.Room_Res)
       .insert(room_res)
       .returning('*');
+  },
+  delete(id) {
+    return db(tableNames.Room_Res)
+      .where({
+        id,
+      })
+      .del();
   },
 };
