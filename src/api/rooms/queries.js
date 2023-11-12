@@ -20,7 +20,12 @@ module.exports = {
       return db(tableNames.Room)
         .whereIn(
           ['Building', 'Room', 'Date', 'Time'],
-          room_res.map((obj) => [obj.Building, obj.Room, (new Date(obj.Date)).getTime(), obj.Time]),
+          room_res.map((obj) => [
+            obj.Building,
+            obj.Room,
+            (new Date(obj.Date)).getTime(),
+            obj.Time,
+          ]),
         )
         .update(properties)
         .returning('*');

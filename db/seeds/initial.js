@@ -355,6 +355,7 @@ exports.seed = async (knex) => {
   for (const tableName of orderedTableNames) {
     console.log('Clearing:', tableName);
     await knex(tableName).del();
+    await knex.raw(`DELETE FROM sqlite_sequence WHERE name='${tableName}'`);
   }
 
   const users = generateUserList();

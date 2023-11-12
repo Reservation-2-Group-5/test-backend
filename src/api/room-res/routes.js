@@ -91,29 +91,74 @@ router.post('/', async (req, res, next) => {
 // for approving or denying a room reservation
 router.put('/:id', async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
-    const reservation = await queries.get(id);
+    const requiredFields = [
+      'Building',
+      'Room',
+      'Date',
+      'Time',
+      'status',
+    ];
+    if (!checkFieldsInPost(req.body, requiredFields)) {
+      res.status(400);
+      const error = new Error(`Missing required fields. Please include: ${requiredFields.join(', ')}`);
+      next(error);
+      return;
+    }
 
-    if (status === 'approved') {
-      // instead of deleting, there could be a Status column that gets updated to keep old entries
-      await queries.delete(id);
-    } else if (status === 'denied') {
-      await queries.delete(id);
-      const {
-        Building,
-        Room,
-        Date,
-        Time,
-      } = reservation;
-      await roomQueries.update(Building, Room, Date, Time, {
+    let room_res;
+    if (Array.isArray(req.body)) {
+      room_res = req.body.map((obj) => requiredFields.reduce((acc, field) => {
+        acc[field] = obj[field];
+        return acc;
+      }, {}));
+    } else {
+      room_res = requiredFields.reduce((acc, field) => {
+        acc[field] = req.body[field];
+        return acc;
+      }, {});
+    }
+
+    const reservations = await queries.get(room_res);
+    // if the reservation doesn't exist, return an error
+    if (!reservations) {
+      res.status(404);
+      const error = new Error('Reservation not found.');
+      next(error);
+      return;
+    }
+
+    // if the reservation exists, update it with the new status
+    const ids = reservations.map((obj) => obj.id);
+    if (req.body[0].status === 'approved') { // status will be the same on all objects in the array
+      if (!req.body[0].NetID || !req.body[0].Name) {
+        res.status(400);
+        const error = new Error('NetID and Name are required when approving a reservation.');
+        next(error);
+        return;
+      }
+      // instead of deleting, there could be a Status column that gets updated
+      await queries.delete(ids);
+      await roomQueries.update(reservations, {
+        Available: false,
+        Reserved_NetID: req.body[0].NetID,
+        Reserved_Name: req.body[0].Name,
+      });
+    } else if (req.body[0].status === 'denied') {
+      await queries.delete(ids);
+      await roomQueries.update(reservations, {
         Available: true,
         Reserved_NetID: null,
-        Assigned_To: null,
+        Reserved_Name: null,
       });
+    } else {
+      res.status(400);
+      const error = new Error('Invalid status.');
+      next(error);
+      return;
     }
 
     res.json({ message: 'Reservation processed successfully.' });
+    console.log('Reservation processed successfully.');
   } catch (err) {
     next(err);
   }

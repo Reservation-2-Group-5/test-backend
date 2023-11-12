@@ -2,12 +2,30 @@ const db = require('../../db');
 const tableNames = require('../../constants/tableNames');
 
 module.exports = {
-  get(id) {
-    return db(tableNames.Room_Res)
-      .where({
-        id,
-      })
-      .first();
+  get(room_res) {
+    if (Array.isArray(room_res)) {
+      return db(tableNames.Room_Res)
+        .whereIn(
+          ['Building', 'Room', 'Date', 'Time'],
+          room_res.map((obj) => [
+            obj.Building,
+            obj.Room,
+            (new Date(obj.Date)).getTime(),
+            obj.Time,
+          ]),
+        );
+    }
+    if (typeof room_res === 'object' && room_res !== null) {
+      return db(tableNames.Room_Res)
+        .where({
+          Building: room_res.Building,
+          Room: room_res.Room,
+          Date: room_res.Date,
+          Time: room_res.Time,
+        })
+        .first();
+    }
+    return null;
   },
   getAll() {
     return db(tableNames.Room_Res)
@@ -44,6 +62,11 @@ module.exports = {
     return null;
   },
   delete(id) {
+    if (Array.isArray(id)) {
+      return db(tableNames.Room_Res)
+        .whereIn('id', id)
+        .del();
+    }
     return db(tableNames.Room_Res)
       .where({
         id,
