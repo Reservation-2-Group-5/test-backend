@@ -36,9 +36,12 @@ module.exports = {
       );
   },
   submit(room_res) {
-    return db(tableNames.Room_Res)
-      .insert(room_res)
-      .returning('*');
+    if (Array.isArray(room_res) || typeof room_res === 'object') {
+      return db(tableNames.Room_Res)
+        .insert(room_res)
+        .returning('*');
+    }
+    return null;
   },
   delete(id) {
     return db(tableNames.Room_Res)

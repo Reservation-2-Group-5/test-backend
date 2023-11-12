@@ -70,6 +70,7 @@ exports.up = async (knex) => {
     table.date('Date').notNullable().references('Date').inTable(tableNames.Room);
     table.integer('Time').notNullable().references('Time').inTable(tableNames.Room);
     table.date('Request_Date').notNullable();
+    table.unique(['Building', 'Room', 'Date', 'Time']);
     table.timestamps(true, true);
   });
 };

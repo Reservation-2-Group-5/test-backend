@@ -1,7 +1,6 @@
 const express = require('express');
 const queries = require('./queries');
 const roomQueries = require('../rooms/queries');
-const userQueries = require('../users/queries');
 
 const router = express.Router();
 
@@ -17,24 +16,70 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+function checkFieldsInPost(body, requiredFields) {
+  if (Array.isArray(body)) {
+    for (const obj of body) {
+      if (!requiredFields.every((field) => field in obj)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (!requiredFields.every((field) => field in body)) {
+    return false;
+  }
+  return true;
+}
+
 // POST /api/v1/room-res
 // for submitting a room reservation
 router.post('/', async (req, res, next) => {
   try {
-    const roomReservation = await queries.submit(req.body);
-    const user = await userQueries.get(req.body.NetID);
-    const {
-      Building,
-      Room,
-      Date,
-      Time,
-    } = req.body;
-    // set the corresponding room to unavailable and assign it to the user
-    // while the request is pending
-    await roomQueries.update(Building, Room, Date, Time, {
+    // if any required fields are missing from req.body, return an error
+    const requiredFields = [
+      'Building',
+      'Room',
+      'Date',
+      'Time',
+      'NetID',
+    ];
+    if (!checkFieldsInPost(req.body, requiredFields)) {
+      res.status(400);
+      const error = new Error(`Missing required fields. Please include: ${requiredFields.join(', ')}`);
+      next(error);
+      return;
+    }
+
+    // only submit the required fields
+    const date = new Date();
+    date.setHours(0, 0, 0, 0); // clear the time portion of the date
+
+    let room_res;
+    if (Array.isArray(req.body)) {
+      room_res = req.body.map((obj) => requiredFields.reduce((acc, field, i) => {
+        if (i === 0) {
+          acc.Request_Date = date.getTime();
+        }
+        acc[field] = obj[field];
+        return acc;
+      }, {}));
+    } else {
+      room_res = requiredFields.reduce((acc, field, i) => {
+        if (i === 0) {
+          acc.Request_Date = date.getTime();
+        }
+        acc[field] = req.body[field];
+        return acc;
+      }, {});
+    }
+
+    const roomReservation = await queries.submit(room_res);
+    // set the corresponding room slots to unavailable with no assignment
+    // while the request is pending - assignment is done when request is approved
+    await roomQueries.update(room_res, {
       Available: false,
-      Reserved_NetID: user.NetID,
-      Reserved_Name: user.Name,
+      Reserved_NetID: null,
+      Reserved_Name: null,
     });
     res.json(roomReservation);
   } catch (err) {

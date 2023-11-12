@@ -385,10 +385,10 @@ exports.seed = async (knex) => {
   // set pending device reservations to unavailable
   console.log('Setting pending device reservations to unavailable');
   const deviceTags = deviceReservations.map((reservation) => reservation.Tag);
-  const changedDevices = await knex('Device').whereIn('Tag', deviceTags).update({
+  await knex('Device').whereIn('Tag', deviceTags).update({
     Available: false,
   }, ['Tag', 'Available']);
-  console.log('Changed devices:', changedDevices);
+  // console.log('Changed devices:', changedDevices);
 
   // set pending room reservations to unavailable
   console.log('Setting pending room reservations to unavailable');
@@ -398,10 +398,10 @@ exports.seed = async (knex) => {
     reservation.Date,
     reservation.Time,
   ]);
-  const changedRooms = await knex('Room').whereIn(['Building', 'Room', 'Date', 'Time'], roomKeys).update({
+  await knex('Room').whereIn(['Building', 'Room', 'Date', 'Time'], roomKeys).update({
     Available: false,
   }, ['Building', 'Room', 'Date', 'Time', 'Available']);
-  console.log('Changed rooms:', changedRooms);
+  // console.log('Changed rooms:', changedRooms);
 
   console.log('Done');
 };
