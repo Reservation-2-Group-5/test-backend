@@ -17,6 +17,11 @@ module.exports = {
       directory: './db/seeds',
     },
     useNullAsDefault: true,
+    pool: {
+      afterCreate: (conn, cb) => {
+        conn.run('PRAGMA foreign_keys = ON', cb);
+      },
+    },
   },
   production: {
     client: 'mysql',
