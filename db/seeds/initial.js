@@ -316,38 +316,6 @@ function generateRoomReservations(users, rooms) {
 }
 
 /**
- * Inserts data in batches using the provided insertFunction.
- * @param {Array} data - The data to be inserted.
- * @param {number} batchSize - The size of each batch.
- * @param {Function} insertFunction - The function to be used for inserting the data.
- * @returns {Promise<void>} - A promise that resolves when all data has been inserted.
- */
-async function insertInBatches(data, insertFunction, tableName = '') {
-  const batchSize = 100; // 100 appears to be the max batch size for sqlite
-  const batches = Math.ceil(data.length / batchSize);
-  let totalInsertedItems = 0;
-  for (let i = 0; i < batches; i += 1) {
-    const start = i * batchSize;
-    const end = start + batchSize;
-    const batch = data.slice(start, end);
-
-    const insertedItems = await insertFunction(batch);
-
-    totalInsertedItems += insertedItems.length;
-    const insertedStr = totalInsertedItems.toLocaleString();
-    const totalStr = data.length.toLocaleString();
-    const fullStr = `Inserted ${insertedStr}/${totalStr} ${tableName} entries`;
-    const ellipsis = '.'.repeat(i % 4);
-    process.stdout.clearLine();
-    process.stdout.cursorTo(0);
-    process.stdout.write(fullStr + ellipsis);
-  }
-  process.stdout.clearLine();
-  process.stdout.cursorTo(0);
-  console.log(`Inserted ${data.length.toLocaleString()} ${tableName} entries`);
-}
-
-/**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
@@ -373,14 +341,17 @@ exports.seed = async (knex) => {
   ];
   const reverseTableNames = orderedTableNames.reverse();
 
-  for (let i = 0; i < orderedTableData.length; i += 1) {
-    const tableName = reverseTableNames[i];
-    const tableData = orderedTableData[i];
-    await insertInBatches(
-      tableData,
-      (batch) => knex(tableName).insert(batch).returning('*'),
-      tableName,
-    );
+  try {
+    await knex.transaction(async (trx) => {
+      for (let i = 0; i < orderedTableData.length; i += 1) {
+        const tableName = reverseTableNames[i];
+        const tableData = orderedTableData[i];
+        console.log('Inserting:', tableName);
+        await trx.batchInsert(tableName, tableData, 500);
+      }
+    });
+  } catch (error) {
+    console.error('Transaction failed:', error);
   }
 
   // set pending device reservations to unavailable
