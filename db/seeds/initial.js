@@ -1,3 +1,5 @@
+const knexConfig = require('../../knexfile');
+
 const orderedTableNames = require('../../src/constants/orderedTableNames');
 
 const COUNTS = {
@@ -323,7 +325,11 @@ exports.seed = async (knex) => {
   for (const tableName of orderedTableNames) {
     console.log('Clearing:', tableName);
     await knex(tableName).del();
-    await knex.raw(`DELETE FROM sqlite_sequence WHERE name='${tableName}'`);
+    if (knexConfig[process.env.NODE_ENV].client === 'sqlite3') {
+      await knex.raw(`DELETE FROM sqlite_sequence WHERE name='${tableName}'`);
+    } else if (knexConfig[process.env.NODE_ENV].client === 'mysql') {
+      await knex.raw(`ALTER TABLE ${tableName} AUTO_INCREMENT = 1`);
+    }
   }
 
   const users = generateUserList();
