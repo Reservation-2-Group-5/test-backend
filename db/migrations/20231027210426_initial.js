@@ -22,7 +22,7 @@ exports.up = async (knex) => {
     table.string('Tag').notNullable().unique().primary();
     table.string('Model_Category').notNullable();
     table.string('Device_Display_Name').notNullable();
-    table.string('Assigned_To').references('Name').inTable(tableNames.User);
+    table.string('Assigned_To');
     table.string('Reserved_NetID').references('NetID').inTable(tableNames.User);
     table.string('Location');
     table.string('Funding_Source');
@@ -41,7 +41,7 @@ exports.up = async (knex) => {
     table.date('Date').notNullable();
     table.integer('Time').notNullable();
     table.boolean('Available').notNullable().defaultTo(true);
-    table.string('Reserved_Name').references('Name').inTable(tableNames.User);
+    table.string('Reserved_Name');
     table.string('Reserved_NetID').references('NetID').inTable(tableNames.User);
     table.integer('Max_Occupancy').notNullable();
     table.boolean('Is_Office').notNullable().defaultTo(false);
@@ -65,13 +65,14 @@ exports.up = async (knex) => {
   await knex.schema.createTable(tableNames.Room_Res, (table) => {
     table.increments('id').primary();
     table.string('NetID').notNullable().references('NetID').inTable(tableNames.User);
-    table.string('Building').notNullable().references('Building').inTable(tableNames.Room);
-    table.string('Room').notNullable().references('Room').inTable(tableNames.Room);
-    table.date('Date').notNullable().references('Date').inTable(tableNames.Room);
-    table.integer('Time').notNullable().references('Time').inTable(tableNames.Room);
+    table.string('Building').notNullable();
+    table.string('Room').notNullable();
+    table.date('Date').notNullable();
+    table.integer('Time').notNullable();
     table.date('Request_Date').notNullable();
-    table.unique(['Building', 'Room', 'Date', 'Time']);
     table.timestamps(true, true);
+
+    table.foreign(['Building', 'Room', 'Date', 'Time']).references(['Building', 'Room', 'Date', 'Time']).inTable(tableNames.Room);
   });
 };
 
