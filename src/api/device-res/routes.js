@@ -91,6 +91,8 @@ router.put('/:id', async (req, res, next) => {
       await queries.delete(id);
       await deviceQueries.update(reservation.Tag, {
         Available: false,
+        Start_Date: reservation.Start_Date,
+        End_Date: reservation.End_Date,
         Reserved_NetID: NetID,
         Assigned_To: Name,
       });
@@ -98,6 +100,8 @@ router.put('/:id', async (req, res, next) => {
       await queries.delete(id);
       await deviceQueries.update(reservation.Tag, {
         Available: true,
+        Start_Date: null,
+        End_Date: null,
         Reserved_NetID: null,
         Assigned_To: null,
       });
