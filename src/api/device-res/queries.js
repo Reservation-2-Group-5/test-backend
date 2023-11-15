@@ -28,8 +28,20 @@ module.exports = {
       // select all columns from the Device_Res, Device, and User tables after joining
       .select(
         `${tableNames.Device_Res}.*`,
-        `${tableNames.Device}.*`,
         `${tableNames.User}.*`,
+        // we don't want the start and end date columns from the device table
+        `${tableNames.Device}.Tag`,
+        `${tableNames.Device}.Model_Category`,
+        `${tableNames.Device}.Device_Display_Name`,
+        `${tableNames.Device}.Assigned_To`,
+        `${tableNames.Device}.Reserved_NetID`,
+        `${tableNames.Device}.Location`,
+        `${tableNames.Device}.Funding_Source`,
+        `${tableNames.Device}.Dept_Ownership`,
+        `${tableNames.Device}.Serial_Number`,
+        `${tableNames.Device}.PO`,
+        `${tableNames.Device}.Warranty_EXP`,
+        `${tableNames.Device}.Available`,
       );
   },
   submit(device_res) {
