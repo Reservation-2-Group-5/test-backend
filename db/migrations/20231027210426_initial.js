@@ -37,7 +37,7 @@ exports.up = async (knex) => {
   console.log('Creating:', tableNames.Room);
   await knex.schema.createTable(tableNames.Room, (table) => {
     table.string('Building').notNullable();
-    table.string('Room').notNullable();
+    table.string('RoomNumber').notNullable();
     table.date('Date').notNullable();
     table.integer('Time').notNullable();
     table.boolean('Available').notNullable().defaultTo(true);
@@ -47,7 +47,7 @@ exports.up = async (knex) => {
     table.boolean('Is_Office').notNullable().defaultTo(false);
     table.timestamps(true, true);
 
-    table.primary(['Building', 'Room', 'Date', 'Time']);
+    table.primary(['Building', 'RoomNumber', 'Date', 'Time']);
   });
 
   console.log('Creating:', tableNames.Device_Res);
@@ -66,13 +66,13 @@ exports.up = async (knex) => {
     table.increments('id').primary();
     table.string('NetID').notNullable().references('NetID').inTable(tableNames.User);
     table.string('Building').notNullable();
-    table.string('Room').notNullable();
+    table.string('RoomNumber').notNullable();
     table.date('Date').notNullable();
     table.integer('Time').notNullable();
     table.date('Request_Date').notNullable();
     table.timestamps(true, true);
 
-    table.foreign(['Building', 'Room', 'Date', 'Time']).references(['Building', 'Room', 'Date', 'Time']).inTable(tableNames.Room);
+    table.foreign(['Building', 'RoomNumber', 'Date', 'Time']).references(['Building', 'RoomNumber', 'Date', 'Time']).inTable(tableNames.Room);
   });
 };
 

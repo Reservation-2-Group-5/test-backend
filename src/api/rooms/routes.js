@@ -14,11 +14,11 @@ router.get('/', async (req, res) => {
 router.get('/:Building/:Room/:Date/:Time', async (req, res, next) => {
   const {
     Building,
-    Room,
+    RoomNumber,
     Date,
     Time,
   } = req.params;
-  const room = await queries.get(Building, Room, Date, Time);
+  const room = await queries.get(Building, RoomNumber, Date, Time);
   if (room) {
     return res.json(room);
   }
@@ -28,25 +28,25 @@ router.get('/:Building/:Room/:Date/:Time', async (req, res, next) => {
 // just in case the request is missing particular parameters
 // then we can return the rooms that match the parameters that are present
 
-router.get('/:Building/:Room/:Date', async (req, res, next) => {
+router.get('/:Building/:RoomNumber/:Date', async (req, res, next) => {
   const {
     Building,
-    Room,
+    RoomNumber,
     Date,
   } = req.params;
-  const rooms = await queries.find({ Building, Room, Date });
+  const rooms = await queries.find({ Building, RoomNumber, Date });
   if (rooms) {
     return res.json(rooms);
   }
   return next();
 });
 
-router.get('/:Building/:Room', async (req, res, next) => {
+router.get('/:Building/:RoomNumber', async (req, res, next) => {
   const {
     Building,
-    Room,
+    RoomNumber,
   } = req.params;
-  const rooms = await queries.find({ Building, Room });
+  const rooms = await queries.find({ Building, RoomNumber });
   if (rooms) {
     return res.json(rooms);
   }

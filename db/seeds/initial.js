@@ -166,7 +166,7 @@ function generateRoomList(users) {
 
           roomList.push({
             Building: building,
-            Room: room,
+            RoomNumber: room,
             Date: date,
             Time: time,
             Available: !reservedTo?.Name,
@@ -275,7 +275,7 @@ function generateRoomReservations(users, rooms) {
       for (const unavailableRoom of roomReservations) {
         if (
           room.Building === unavailableRoom.Building
-          && room.Room === unavailableRoom.Room
+          && room.RoomNumber === unavailableRoom.RoomNumber
           && room.Date.getTime() === unavailableRoom.Date.getTime()
           && room.Time === unavailableRoom.Time
         ) {
@@ -307,7 +307,7 @@ function generateRoomReservations(users, rooms) {
     roomReservations.push({
       NetID: randomUser.NetID,
       Building: randomRoom.Building,
-      Room: randomRoom.Room,
+      RoomNumber: randomRoom.RoomNumber,
       Date: randomRoom.Date,
       Time: randomRoom.Time,
       Request_Date: requestDate,
@@ -372,13 +372,13 @@ exports.seed = async (knex) => {
   console.log('Setting pending room reservations to unavailable');
   const roomKeys = roomReservations.map((reservation) => [
     reservation.Building,
-    reservation.Room,
+    reservation.RoomNumber,
     reservation.Date,
     reservation.Time,
   ]);
-  await knex('Room').whereIn(['Building', 'Room', 'Date', 'Time'], roomKeys).update({
+  await knex('Room').whereIn(['Building', 'RoomNumber', 'Date', 'Time'], roomKeys).update({
     Available: false,
-  }, ['Building', 'Room', 'Date', 'Time', 'Available']);
+  }, ['Building', 'RoomNumber', 'Date', 'Time', 'Available']);
   // console.log('Changed rooms:', changedRooms);
 
   console.log('Done');

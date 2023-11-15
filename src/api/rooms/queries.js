@@ -5,11 +5,11 @@ module.exports = {
   getAll() {
     return db(tableNames.Room);
   },
-  get(Building, Room, Date, Time) {
+  get(Building, RoomNumber, Date, Time) {
     return db(tableNames.Room)
       .where({
         Building,
-        Room,
+        RoomNumber,
         Date,
         Time,
       });
@@ -19,10 +19,10 @@ module.exports = {
     if (Array.isArray(room_res)) {
       return db(tableNames.Room)
         .whereIn(
-          ['Building', 'Room', 'Date', 'Time'],
+          ['Building', 'RoomNumber', 'Date', 'Time'],
           room_res.map((obj) => [
             obj.Building,
-            obj.Room,
+            obj.RoomNumber,
             (new Date(obj.Date)).getTime(),
             obj.Time,
           ]),
@@ -35,7 +35,7 @@ module.exports = {
       return db(tableNames.Room)
         .where({
           Building: room_res.Building,
-          Room: room_res.Room,
+          RoomNumber: room_res.RoomNumber,
           Date: room_res.Date,
           Time: room_res.Time,
         })
@@ -48,32 +48,32 @@ module.exports = {
   find(params) {
     const {
       Building,
-      Room,
+      RoomNumber,
       Date,
       Time,
     } = params;
-    if (Time && Date && Room && Building) {
+    if (Time && Date && RoomNumber && Building) {
       return db(tableNames.Room)
         .where({
           Building,
-          Room,
+          RoomNumber,
           Date,
           Time,
         });
     }
-    if (Date && Room && Building) {
+    if (Date && RoomNumber && Building) {
       return db(tableNames.Room)
         .where({
           Building,
-          Room,
+          RoomNumber,
           Date,
         });
     }
-    if (Room && Building) {
+    if (RoomNumber && Building) {
       return db(tableNames.Room)
         .where({
           Building,
-          Room,
+          RoomNumber,
         });
     }
     if (Building) {

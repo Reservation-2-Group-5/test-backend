@@ -6,10 +6,10 @@ module.exports = {
     if (Array.isArray(room_res)) {
       return db(tableNames.Room_Res)
         .whereIn(
-          ['Building', 'Room', 'Date', 'Time'],
+          ['Building', 'RoomNumber', 'Date', 'Time'],
           room_res.map((obj) => [
             obj.Building,
-            obj.Room,
+            obj.RoomNumber,
             (new Date(obj.Date)).getTime(),
             obj.Time,
           ]),
@@ -19,7 +19,7 @@ module.exports = {
       return db(tableNames.Room_Res)
         .where({
           Building: room_res.Building,
-          Room: room_res.Room,
+          RoomNumber: room_res.RoomNumber,
           Date: room_res.Date,
           Time: room_res.Time,
         })
@@ -34,7 +34,7 @@ module.exports = {
         tableNames.Room,
         function join() {
           this.on(`${tableNames.Room_Res}.Building`, '=', `${tableNames.Room}.Building`)
-            .andOn(`${tableNames.Room_Res}.Room`, '=', `${tableNames.Room}.Room`)
+            .andOn(`${tableNames.Room_Res}.RoomNumber`, '=', `${tableNames.Room}.RoomNumber`)
             .andOn(`${tableNames.Room_Res}.Date`, '=', `${tableNames.Room}.Date`)
             .andOn(`${tableNames.Room_Res}.Time`, '=', `${tableNames.Room}.Time`);
         },

@@ -16,6 +16,12 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+/**
+ * Checks if all required fields are present in the request body.
+ * @param {Object|Array} body - The request body to check.
+ * @param {Array} requiredFields - An array of required field names.
+ * @returns {boolean} - Returns true if all required fields are present, false otherwise.
+ */
 function checkFieldsInPost(body, requiredFields) {
   if (Array.isArray(body)) {
     for (const obj of body) {
@@ -38,7 +44,7 @@ router.post('/', async (req, res, next) => {
     // if any required fields are missing from req.body, return an error
     const requiredFields = [
       'Building',
-      'Room',
+      'RoomNumber',
       'Date',
       'Time',
       'NetID',
@@ -93,7 +99,7 @@ router.put('/:id', async (req, res, next) => {
   try {
     const requiredFields = [
       'Building',
-      'Room',
+      'RoomNumber',
       'Date',
       'Time',
       'status',
